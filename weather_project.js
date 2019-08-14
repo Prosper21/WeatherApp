@@ -2,21 +2,33 @@ import React, { Component } from 'react';
 
 import { StyleSheet, Text, View, TextInput, ImageBackground } from 'react-native';
 
-import OpenWeatherMap from './open_weather_map';
-import Forecast from './Forecast';
+import OpenWeatherMap from './open_weather_map.js';
+import Forecast from './Forecast/index.js';
+import LocationButton from "./LocationButton/index.js";
 
 class WeatherProject extends Component {
 	constructor(props) {
 		super(props);
-		this.state = { zip: "", forecast: null };
+		this.state = { forecast: null };
 	}
 
-	_handleTextChange = event => {
-		let zip = event.nativeEvent.text;
-		OpenWeatherMap.fetchForecast(zip).then(forecast => {
+	_getForecastForZip = zip => {
+		OpenWeatherMap.fetchZipForecast(zip).then(forecast => {
 			this.setState({ forecast: forecast });
 		});
 	};
+
+	_getForecastForCoords = (lat, lon) => {
+		OpenWeatherMap.fetchLatLonForecast(lat, lon).then(forecast => {
+			this.setState({ forecast: forecast });
+		});
+	};
+
+	_handleTextChange = event => {
+		let zip = event.nativeEvent.text;
+		this._getForecastForZip(zip);
+	};
+	
 
 	render() {
 		let content = null;
@@ -36,11 +48,13 @@ class WeatherProject extends Component {
 					source={require('./flowers.png')}
 					resizeMode="cover"
 					style={styles.backdrop}>
+				
 					<View style={styles.overlay}>
 						<View style={styles.row}>
 							<Text style={styles.mainText}>
 								Current weather for
 							</Text>
+
 							<View style={styles.zipContainer}>
 								<TextInput
 									style={[styles.zipCode, styles.mainText]}
@@ -49,6 +63,10 @@ class WeatherProject extends Component {
 								/>
 							</View>
 						</View>
+
+						<View style={styles.row}>
+            				<LocationButton onGetCoords={this._getForecastForCoords} />
+          				</View>
 						{content}
 					</View>
 				</ImageBackground>
